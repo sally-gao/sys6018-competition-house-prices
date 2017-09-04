@@ -172,6 +172,7 @@ summary(my_model)
 #
 # After univariate plots were explored, promising variables (variables that appeared to be associated with the response -- SalePrice -- were put in model. Collinear variables were identified and removed as necessary.  Variables with statistically significant coefficient were retained and then a model iteration was tested.  RMSE was calculated.  The RMSE of different models were compared using k-fold cross-validation (average test RMSE across all folds), and the model with the lowest test RMSE was selected.
 #
+# For our parametric model, we decided to use a multilinear regression model because it is the parametric model type we are most familiar with at this time, and therefore the type that we felt most capable of tuning to high performance.
 
 # Make Final Predictions for Submission ---------------------------------------
 
