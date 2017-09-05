@@ -1,0 +1,4 @@
+In addition to the support vector machine model, we also investigated KNN methods which yielded inferior results.
+Using the ‘FNN’ package, we tested a variety of variable combinations and neighborhoods sizes. 
+The most predictive model on the training data yielded a Kaggle score of .17875 when ran on the test data.
+One difficulty of using KNN methods on this data set that we encountered was the high dimensionality of the data relative to the number of observations. 
