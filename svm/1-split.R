@@ -1,5 +1,6 @@
 library(tidyverse)
 train <- read_csv("train.csv")
+test <- read_csv("test.csv")
 
 # split training into train and test --------------------------------------
 

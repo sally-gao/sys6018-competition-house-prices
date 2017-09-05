@@ -12,6 +12,8 @@ lin.rmse # 32427.39
 
 # -------------------------------------------------------------------
 
+# The SVM function only works if we build two separate dataframes containing no unused variables.
+
 svm_data <- data.frame(LogLotArea = train_sml$LogLotArea,
                        SalePrice = train_sml$SalePrice,
                        YearBuilt = train_sml$YearBuilt,
@@ -55,6 +57,4 @@ svmpreds <- predict(simple_svm, test_data)
 
 svm.error <- test_data$SalePrice - svmpreds
 svm.rmse <- sqrt(mean(svm.error^2))
-svm.rmse # 23494.8
-
-
+svm.rmse # 23494.8 -- better than linear regression.

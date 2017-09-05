@@ -1,43 +1,35 @@
-test <- read_csv("test.csv")
-
 # GARAGES ----------------------------------------------------------------------
 
 # Create hasGarage variable. It's 0 if there is no garage and 1 if there is a garage.
-train.mod <- train %>%
-  mutate(hasGarage = factor(ifelse(is.na(GarageType), 0, 1)))
-
-test.mod <- test %>%
-  mutate(hasGarage = factor(ifelse(is.na(GarageType), 0, 1)))
+train_sml$hasGarage <- as.factor(ifelse(is.na(train_sml$GarageType), 0, 1))
+test_sml$hasGarage <- as.factor(ifelse(is.na(test_sml$GarageType), 0, 1))
 
 # FIREPLACES ----------------------------------------------------------------------
 
 # Create hasFireplace variable.
-train.mod$hasFireplace <- as.factor(ifelse(train.mod$Fireplaces==0, 0, 1))
-test.mod$hasFireplace <- as.factor(ifelse(test.mod$Fireplaces==0, 0, 1))
+train_sml$hasFireplace <- as.factor(ifelse(train_sml$Fireplaces==0, 0, 1))
+test_sml$hasFireplace <- as.factor(ifelse(test_sml$Fireplaces==0, 0, 1))
 
-# BSMTQUAL AND TOTALBSMTSF ----------------------------------------------------------------------
-
-# There's 1 NA in test.mod$TotalBsmtSF, so recode as 0.
-test.mod$TotalBsmtSF[is.na(test.mod$TotalBsmtSF)] <- 0
+# BSMTQUAL ----------------------------------------------------------------------
 
 # Plotting BsmtQual against SalePrice reveals that N/A is similar to "Fa", so I'll just recode N/As as "Fa"
-train.mod$BsmtQual[is.na(train.mod$BsmtQual)] <- "Fa"
-test.mod$BsmtQual[is.na(test.mod$BsmtQual)] <- "Fa"
+train_sml$BsmtQual[is.na(train_sml$BsmtQual)] <- "Fa"
+test_sml$BsmtQual[is.na(test_sml$BsmtQual)] <- "Fa"
 
 # Treat BsmtQual as factor
-train.mod$BsmtQual <- as.factor(train.mod$BsmtQual)
-test.mod$BsmtQual <- as.factor(test.mod$BsmtQual)
+train_sml$BsmtQual <- as.factor(train_sml$BsmtQual)
+test_sml$BsmtQual <- as.factor(test_sml$BsmtQual)
 
 # NEIGHBORHOOD ----------------------------------------------------------------------
 
 # Neighborhood has too many categories - put into smaller buckets
 # split neighborhoods into quintiles based on median saleprice
-neighborhoods <- summarise(group_by(train.mod, Neighborhood),
+neighborhoods <- summarise(group_by(train_sml, Neighborhood),
                            median.price = median(SalePrice))
 neighborhoods <- neighborhoods %>% mutate(quintile = ntile(median.price, 5))
 
-# create NeighborhoodQuintile variable in train.mod
-train.mod$NeighborhoodQuintile <- recode_factor(train.mod$Neighborhood,
+# create NeighborhoodQuintile variable in train_sml
+train_sml$NeighborhoodQuintile <- recode_factor(train_sml$Neighborhood,
                                                 Blmngtn = 4,
                                                 Blueste = 1,
                                                 BrDale = 1,
@@ -64,11 +56,11 @@ train.mod$NeighborhoodQuintile <- recode_factor(train.mod$Neighborhood,
                                                 Timber = 5,
                                                 Veenker = 5)
 
-train.mod$NeighborhoodQuintile <- train.mod$NeighborhoodQuintile %>%
+train_sml$NeighborhoodQuintile <- train_sml$NeighborhoodQuintile %>%
   factor(levels=c("1", "2", "3", "4", "5"), ordered=TRUE)
 
 # Recode test data
-test.mod$NeighborhoodQuintile <- recode_factor(test.mod$Neighborhood,
+test_sml$NeighborhoodQuintile <- recode_factor(test_sml$Neighborhood,
                                                Blmngtn = 4,
                                                Blueste = 1,
                                                BrDale = 1,
@@ -95,13 +87,13 @@ test.mod$NeighborhoodQuintile <- recode_factor(test.mod$Neighborhood,
                                                Timber = 5,
                                                Veenker = 5)
 
-test.mod$NeighborhoodQuintile <- test.mod$NeighborhoodQuintile %>%
+test_sml$NeighborhoodQuintile <- test_sml$NeighborhoodQuintile %>%
   factor(levels=c("1", "2", "3", "4", "5"), ordered=TRUE)
 
 # We can also try splitting into sextiles instead of quintiles
 neighborhoods <- neighborhoods %>% mutate(sextile = ntile(median.price, 6))
 
-train.mod$NeighborhoodSextile <- recode_factor(train.mod$Neighborhood,
+train_sml$NeighborhoodSextile <- recode_factor(train_sml$Neighborhood,
                                                Blmngtn = 4,
                                                Blueste = 1,
                                                BrDale = 1,
@@ -128,10 +120,10 @@ train.mod$NeighborhoodSextile <- recode_factor(train.mod$Neighborhood,
                                                Timber = 5,
                                                Veenker = 6)
 
-train.mod$NeighborhoodSextile <- train.mod$NeighborhoodSextile %>%
+train_sml$NeighborhoodSextile <- train_sml$NeighborhoodSextile %>%
   factor(levels=c("1", "2", "3", "4", "5", "6"), ordered=TRUE)
 
-test.mod$NeighborhoodSextile <- recode_factor(test.mod$Neighborhood,
+test_sml$NeighborhoodSextile <- recode_factor(test_sml$Neighborhood,
                                               Blmngtn = 4,
                                               Blueste = 1,
                                               BrDale = 1,
@@ -158,18 +150,18 @@ test.mod$NeighborhoodSextile <- recode_factor(test.mod$Neighborhood,
                                               Timber = 5,
                                               Veenker = 6)
 
-test.mod$NeighborhoodSextile <- test.mod$NeighborhoodSextile %>%
+test_sml$NeighborhoodSextile <- test_sml$NeighborhoodSextile %>%
   factor(levels=c("1", "2", "3", "4", "5", "6"), ordered=TRUE)
 
 # SALE CONDITION ----------------------------------------------------------------------
 
 # Recode SaleCondition so that anything other than Normal and Partial falls into "Other"
-train.mod$SaleCondition <- recode_factor(train.mod$SaleCondition,
+train_sml$SaleCondition <- recode_factor(train_sml$SaleCondition,
                                          Normal = "Normal",
                                          Partial = "Partial",
                                          .default = "Other")
 
-test.mod$SaleCondition <- recode_factor(test.mod$SaleCondition,
+test_sml$SaleCondition <- recode_factor(test_sml$SaleCondition,
                                         Normal = "Normal",
                                         Partial = "Partial",
                                         .default = "Other")
@@ -177,7 +169,7 @@ test.mod$SaleCondition <- recode_factor(test.mod$SaleCondition,
 # BEDROOM.ABV.GR ----------------------------------------------------------------------
 
 # Recode BedroomAbvGr so that anything above 3 falls into "4+"
-train.mod$BedroomAbvGr <- recode_factor(train.mod$BedroomAbvGr,
+train_sml$BedroomAbvGr <- recode_factor(train_sml$BedroomAbvGr,
                                         "0" = "0",
                                         "1" = "1",
                                         "2" = "2",
@@ -185,7 +177,7 @@ train.mod$BedroomAbvGr <- recode_factor(train.mod$BedroomAbvGr,
                                         .default = "4+",
                                         .ordered = TRUE)
 
-test.mod$BedroomAbvGr <- recode_factor(test.mod$BedroomAbvGr,
+test_sml$BedroomAbvGr <- recode_factor(test_sml$BedroomAbvGr,
                                        "0" = "0",
                                        "1" = "1",
                                        "2" = "2",
@@ -195,80 +187,72 @@ test.mod$BedroomAbvGr <- recode_factor(test.mod$BedroomAbvGr,
 
 # TOT.RMS.ABV.GRD ----------------------------------------------------------------------
 
-# Treat TotRmsAbvGrd as factor and add collapsed buckets "2-3" and "10+"
-train.mod$TotRmsAbvGrd <- recode_factor(train.mod$TotRmsAbvGrd,
-                                        "2" = "2-3", "3" = "2-3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
-                                        "8" = "8", "9" = "9",
-                                        .default = "10+",
-                                        .ordered = TRUE)
+# Treat TotRmsAbvGrd as factor and add collapsed buckets "2-3" and "10+" so the levels match in test and train
+train_sml$TotRmsAbvGrd <- recode_factor(train_sml$TotRmsAbvGrd,
+                                    "2" = "2-3", "3" = "2-3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
+                                    "8" = "8", "9" = "9",
+                                    .default = "10+",
+                                    .ordered = TRUE)
 
-test.mod$TotRmsAbvGrd <- recode_factor(test.mod$TotRmsAbvGrd,
-                                       "3" = "2-3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
-                                       "8" = "8", "9" = "9",
-                                       .default = "10+",
-                                       .ordered = TRUE)
+test_sml$TotRmsAbvGrd <- recode_factor(test_sml$TotRmsAbvGrd,
+                                   "3" = "2-3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
+                                   "8" = "8", "9" = "9",
+                                   .default = "10+",
+                                   .ordered = TRUE)
 
 # OVERALL.QUAL  ----------------------------------------------------------------------
 
 # Recode OverallQual so 1 and 2 are treated as "1-2"
 
-train.mod$OverallQual <- recode_factor(train.mod$OverallQual,
+train_sml$OverallQual <- recode_factor(train_sml$OverallQual,
+                                        "2" = "1-2", "3" = "3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
+                                        "8" = "8", "9" = "9", "10"= "10",
+                                        .ordered = TRUE)
+
+test_sml$OverallQual <- recode_factor(test_sml$OverallQual,
                                        "1" = "1-2", "2" = "1-2", "3" = "3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
                                        "8" = "8", "9" = "9", "10"= "10",
                                        .ordered = TRUE)
 
-test.mod$OverallQual <- recode_factor(test.mod$OverallQual,
-                                      "1" = "1-2", "2" = "1-2", "3" = "3", "4" = "4", "5" = "5", "6" = "6", "7" = "7",
-                                      "8" = "8", "9" = "9", "10"= "10",
-                                      .ordered = TRUE)
-
-# FULL BATH ----------------------------------------------------------------------
-
-# Treat FullBath as factor and recode so 3 and 4 are both "3+"
-train.mod$FullBath <- recode_factor(train.mod$FullBath,
-                                "0" = "0",
-                                "1" = "1",
-                                "2" = "2",
-                                .default = "3+",
-                                .ordered = TRUE)
-
-test.mod$FullBath <- recode_factor(test.mod$FullBath,
-                               "0" = "0",
-                               "1" = "1",
-                               "2" = "2",
-                               .default = "3+",
-                               .ordered = TRUE)
 # OTHER FACTORS ----------------------------------------------------------------------
 
+cols <- c("FullBath", "CentralAir", "MSZoning", "ExterQual")
+
+test_sml[cols] <- lapply(test_sml[cols], as.factor)
+
+# Treat FullBath as factor
+train_sml$FullBath <- as.factor(train_sml$FullBath)
+test_sml$FullBath <- as.factor(test_sml$FullBath)
+
 # Treat CentralAir as factor
-train.mod$CentralAir <- as.factor(train.mod$CentralAir)
-test.mod$CentralAir <- as.factor(test.mod$CentralAir)
+train_sml$CentralAir <- as.factor(train_sml$CentralAir)
+test_sml$CentralAir <- as.factor(test_sml$CentralAir)
 
 # Treat MSZoning as factor
-train.mod$MSZoning <- as.factor(train.mod$MSZoning)
-test.mod$MSZoning <- as.factor(test.mod$MSZoning)
+train_sml$MSZoning <- as.factor(train_sml$MSZoning)
+test_sml$MSZoning <- as.factor(test_sml$MSZoning)
 
 # Treat ExterQual as factor
-train.mod$ExterQual <- as.factor(train.mod$ExterQual)
-test.mod$ExterQual <- as.factor(test.mod$ExterQual)
+train_sml$ExterQual <- as.factor(train_sml$ExterQual)
+test_sml$ExterQual <- as.factor(test_sml$ExterQual)
 
 
 # LOG LOT AREA ----------------------------------------------------------------------
 
-train.mod$LogLotArea <- log(train.mod$LotArea)
-test.mod$LogLotArea <- log(test.mod$LotArea)
+train_sml$LogLotArea <- log(train_sml$LotArea)
+test_sml$LogLotArea <- log(test_sml$LotArea)
 
 # DECADE BUILT ----------------------------------------------------------------------
 
-train.mod <- train.mod %>% 
+train_sml <- train_sml %>% 
   mutate(DecadeBuilt = round(YearBuilt / 10))
 
-train.mod$DecadeBuilt <- as.factor(train.mod$DecadeBuilt)
+train_sml$DecadeBuilt <- as.factor(train_sml$DecadeBuilt)
 
-test.mod <- test.mod %>% 
+test_sml <- test_sml %>% 
   mutate(DecadeBuilt = round(YearBuilt / 10))
 
-test.mod$DecadeBuilt <- as.factor(test.mod$DecadeBuilt)
+test_sml$DecadeBuilt <- as.factor(test_sml$DecadeBuilt)
 
-train.mod$DecadeBuilt <- recode_factor(train.mod$DecadeBuilt,
+train_sml$DecadeBuilt <- recode_factor(train_sml$DecadeBuilt,
                                        "187"="188")

@@ -1,5 +1,7 @@
 # SIMPLE SVM -------------------------------------------------------------------
 
+# Create fulltrain and fulltest dataframes containing only the variables we want to use
+
 fulltrain <- data.frame(LogLotArea = train.mod$LogLotArea,
                         SalePrice = train.mod$SalePrice,
                         YearBuilt = train.mod$YearBuilt,
@@ -33,6 +35,7 @@ fulltest <- data.frame(LogLotArea = test.mod$LogLotArea,
                        TotalBsmtSF = test.mod$TotalBsmtSF,
                        ExterQual = test.mod$ExterQual)
 
+# Run SVM without tuning
 simple_svm_full <- svm(SalePrice ~
                          LogLotArea
                        +YearBuilt
@@ -51,13 +54,16 @@ simple_svm_full <- svm(SalePrice ~
                        +ExterQual,
                        fulltrain)
 
+# Predict
 svmpreds_full <- predict(simple_svm_full, fulltest)
 
 mypreds <- data.frame(Id = test.mod$Id, SalePrice = svmpreds_full)
 write.table(mypreds, file = "svm_submission_simple1.csv", row.names=F, sep=",")
 
 
-#TUNED SVM -------------------------------------------------------------------
+# TUNED SVM -------------------------------------------------------------------
+
+# Run SVM with tuning (epsilon and cost selected based on inspection of plot(svm.tune))
 
 svm.tune <- tune(svm, SalePrice ~ 
                    LogLotArea
@@ -78,6 +84,7 @@ svm.tune <- tune(svm, SalePrice ~
                  data=fulltrain,
                  ranges = list(epsilon = seq(0,0.3,0.05), cost = 2^(2:6)))
 
+# Predict
 svmtune.preds <- predict(svm.tune$best.model, fulltest)
 
 mytunedpreds <- data.frame(Id = test.mod$Id, SalePrice = svmtune.preds)
